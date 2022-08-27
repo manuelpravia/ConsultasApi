@@ -2,19 +2,14 @@ package com.apibank.consultas.domain.service.impl;
 
 import com.apibank.consultas.domain.dto.ClientAllProduct;
 import com.apibank.consultas.domain.service.ConsultProductByCustomerService;
-import com.apibank.consultas.infraestructure.data.document.Account;
-import com.apibank.consultas.infraestructure.data.document.Credit;
 import com.apibank.consultas.infraestructure.data.document.Customer;
 import com.apibank.consultas.infraestructure.data.repository.AccountRepository;
 import com.apibank.consultas.infraestructure.data.repository.CreditRepository;
 import com.apibank.consultas.infraestructure.data.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class ConsultProductByCustomerServiceImpl implements ConsultProductByCustomerService {
@@ -28,26 +23,23 @@ public class ConsultProductByCustomerServiceImpl implements ConsultProductByCust
 
     @Override
     public Mono<ClientAllProduct> listAccount(String idCustomer) {
-        ClientAllProduct clientAllProduct= new ClientAllProduct();
-        List<Credit> creditList = new ArrayList<>();
-        List<Account> accountList = new ArrayList<>();
-         customerRepository.getCustomerByID(idCustomer)
-                .flatMap(customer -> {
-                    clientAllProduct.setCustomer(customer);
-                    creditRepository.getCreditByCustomerID(idCustomer)
-                            .flatMap(credit -> {
-                                creditList.add(credit);
-                                return  null;
-                            }).subscribe();
-                    accountRepository.getAccountByCustomerID(idCustomer)
-                            .flatMap(account -> {
-                                accountList.add(account);
-                                return  null;
-                            }).subscribe();
-                    return  null;
-                }).subscribe();
-         return Mono.just(clientAllProduct);
-    }
+        return customerRepository.getCustomerByID(idCustomer)
+                .zipWhen(cutomer -> accountRepository.getAccountByCustomerID(idCustomer).collectList())
+                .zipWhen(t -> creditRepository.getCreditByCustomerID(idCustomer).collectList() )
+                .map(result ->{
+                    ClientAllProduct clientAllProduct = new ClientAllProduct();
+                    Customer x = result.getT1().getT1();
+                    clientAllProduct.setId(x.getId());
+                    clientAllProduct.setName(x.getName());
+                    clientAllProduct.setAddress(x.getAddress());
+                    clientAllProduct.setPhone(x.getPhone());
+                    clientAllProduct.setType(x.getType());
+                    clientAllProduct.setAccounts(result.getT1().getT2());
+                    clientAllProduct.setCredits(result.getT2());
+                    return clientAllProduct;
+                });
 
+
+    }
 
 }

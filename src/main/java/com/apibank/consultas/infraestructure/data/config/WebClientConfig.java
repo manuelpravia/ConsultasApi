@@ -16,6 +16,6 @@ public class WebClientConfig {
     WebClient ApiWebClient(){
         return  WebClient.create(clientApiUrl);
     }
-
+ 
 
 }

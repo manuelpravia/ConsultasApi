@@ -2,11 +2,13 @@ package com.apibank.consultas.api;
 
 import com.apibank.consultas.domain.dto.ClientAllProduct;
 import com.apibank.consultas.domain.service.ConsultProductByCustomerService;
+import com.apibank.consultas.infraestructure.data.document.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
